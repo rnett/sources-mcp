@@ -1,0 +1,62 @@
+site_name: Sources MCP
+repo_name: Sources MCP
+repo_url: https://github.com/rnett/sources-mcp
+site_url: https://sources-mcp.rnett.dev
+site_description: "A fully-featured MCP server for working with dependency sources"
+site_author: Ryan Nett
+remote_branch: gh-pages
+
+copyright: 'Copyright &copy; 2025 Ryan Nett'
+
+theme:
+  name: 'material'
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: 'white'
+      accent: 'darkgreen'
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: 'black'
+      accent: 'darkgreen'
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: 'Lato'
+    code: 'Fira Code'
+  features:
+    - content.code.copy
+    - content.code.select
+    - navigation.expand
+
+plugins:
+  - search
+  - mike
+
+#extra_css:
+#  - 'css/app.css'
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - codehilite:
+      guess_lang: false
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.emoji
+  - pymdownx.details
+  - admonition
+
+nav:
+  - 'Getting Started': index.md
+  - 'Agent Skills': skills.md
+  - 'Tools':

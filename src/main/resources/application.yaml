@@ -1,0 +1,5 @@
+ktor:
+  deployment:
+    port: 47833
+  development: false
+gradle: { }

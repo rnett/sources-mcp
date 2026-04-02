@@ -1,0 +1,20 @@
+<configuration>
+    <statusListener class="dev.rnett.sources.mcp.logging.FileStatusListener"/>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${SOURCES_MCP_LOG_DIR:-${user.home}/.mcps/rnett-sources-mcp/logs}/sources-mcp.log</file>
+        <immediateFlush>true</immediateFlush>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${SOURCES_MCP_LOG_DIR:-${user.home}/.mcps/rnett-sources-mcp/logs}/sources-mcp-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>20</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+        <prudent>true</prudent>
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%X{PID}] [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

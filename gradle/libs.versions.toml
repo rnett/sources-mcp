@@ -1,0 +1,106 @@
+[versions]
+# For renovate to work right, every version referenced here MUST have a coresponding dependency in the catalog, which is used to detect updates for it
+
+kotlin = "2.3.20"
+ktor = "3.3.3"
+logback = "1.5.32"
+caffeine = "3.2.3"
+commonsIo = "2.21.0"
+schemaKenerator = "2.6.0"
+kotlinxSerializationJson = "1.10.0"
+flexmark = "0.64.8"
+coroutines = "1.10.2"
+mcpSdk = "0.7.2"
+gradleToolingApi = "9.4.1" # renovate: ignoreUnstable=false
+buildconfig = "6.0.9"
+vanniktechPublish = "0.36.0"
+jsoup = "1.22.1"
+koin = "4.2.0"
+mockk = "1.14.9"
+slf4j = "2.0.17"
+guava = "33.5.0-jre"
+junit-jupiter = "6.0.3"
+jetbrains-compose = "1.10.3"
+agp9 = "9.1.0"
+androidxCompose = "1.10.6"
+androidxActivityCompose = "1.13.0"
+lucene = "10.4.0"
+shadow = "9.4.1"
+treesitter = "0.26.6"
+treesitter-java = "0.23.5"
+treesitter-kotlin = "0.3.8.1"
+ort = "83.0.1"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-power-assert = { id = "org.jetbrains.kotlin.plugin.power-assert", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktechPublish" }
+
+[libraries]
+gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version.ref = "gradleToolingApi" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+schema-kenerator-core = { module = "io.github.smiley4:schema-kenerator-core", version.ref = "schemaKenerator" }
+schema-kenerator-serialization = { module = "io.github.smiley4:schema-kenerator-serialization", version.ref = "schemaKenerator" }
+schema-kenerator-jsonschema = { module = "io.github.smiley4:schema-kenerator-jsonschema", version.ref = "schemaKenerator" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+flexmark-html2md = { module = "com.vladsch.flexmark:flexmark-html2md-converter", version.ref = "flexmark" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+mcp-sdk = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcpSdk" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-di = { module = "io.ktor:ktor-server-di", version.ref = "ktor" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+ktor-server-sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-serialization-kotlinx-xml = { group = "io.ktor", name = "ktor-serialization-kotlinx-xml", version.ref = "ktor" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+koin-core = { module = "io.insert-koin:koin-core-jvm", version.ref = "koin" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5", version.ref = "koin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm", version.ref = "kotlin" }
+kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host", version.ref = "kotlin" }
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-scripting-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+treesitter = { module = "io.github.bonede:tree-sitter", version.ref = "treesitter" }
+treesitter-java = { module = "io.github.bonede:tree-sitter-java", version.ref = "treesitter-java" }
+treesitter-kotlin = { module = "io.github.bonede:tree-sitter-kotlin", version.ref = "treesitter-kotlin" }
+
+lucene-core = { group = "org.apache.lucene", name = "lucene-core", version.ref = "lucene" }
+lucene-codecs = { group = "org.apache.lucene", name = "lucene-codecs", version.ref = "lucene" }
+lucene-analysis-common = { group = "org.apache.lucene", name = "lucene-analysis-common", version.ref = "lucene" }
+lucene-queryparser = { group = "org.apache.lucene", name = "lucene-queryparser", version.ref = "lucene" }
+lucene-highlighter = { group = "org.apache.lucene", name = "lucene-highlighter", version.ref = "lucene" }
+
+ort-model = { module = "org.ossreviewtoolkit:model", version.ref = "ort" }
+ort-analyzer = { module = "org.ossreviewtoolkit:analyzer", version.ref = "ort" }
+ort-downloader = { module = "org.ossreviewtoolkit:downloader", version.ref = "ort" }
+ort-plugins-packagemanagers-gradle = { module = "org.ossreviewtoolkit.plugins.packagemanagers:gradle-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-npm = { module = "org.ossreviewtoolkit.plugins.packagemanagers:node-package-manager", version.ref = "ort" }
+
+# so that renovate updates used versions
+#noinspection UnusedVersionCatalogEntry
+compose-graphics = { module = "org.jetbrains.compose.ui:ui-graphics", version.ref = "jetbrains-compose" }
+#noinspection UnusedVersionCatalogEntry
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "androidxCompose" }
+#noinspection UnusedVersionCatalogEntry
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }
+#noinspection UnusedVersionCatalogEntry
+android-gradle-plugin-nine-dummy = { module = "com.android.tools.build:gradle", version.ref = "agp9" }
