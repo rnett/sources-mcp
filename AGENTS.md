@@ -25,6 +25,7 @@ Not-yet-supported items are marked with `[todo]`.
 - **[todo] Session View**: Ephemeral, project-level directory containing junctions to CAS entries and a `manifest.json`.
 - **ORT for dependency access**: We are using the [OSS Review Toolkit](https://github.com/oss-review-toolkit/ort) to detect and download dependencies. It supports many ecosystems. We use its components as libraries, rather than using the
   CLI directly.
+  - **Package Managers**: Prefer `gradle-inspector` over the legacy `gradle` package manager. ALWAYS filter out the `Unmanaged` package manager from `PackageManagerFactory.ALL` to ensure reliable detection of real projects.
 
 ---
 
@@ -33,9 +34,22 @@ Not-yet-supported items are marked with `[todo]`.
 - *[todo] *Immutable CAS Model**: Replaced in-place index mutation and complex locking with an immutable generational model to eliminate deadlocks and 60s timeouts on Windows.
 - **[todo] Virtual Searching**: Leverages Lucene `MultiReader` to search across multiple dependency indices without physical merging.
 - **[todo] Isolated State**: Each tool call operates on a unique session view, ensuring stability during concurrent updates.
+- **ORT Mandates**:
+  - **Plugin Versions**: Coordinate core and plugin versions carefully (e.g., avoid mixing v13 and v83) to prevent `NoClassDefFoundError` due to breaking core changes.
+  - **Managed Files**: ALWAYS check `file.isFile` before reading bytes from `ManagedFileInfo` paths to avoid `FileNotFoundException` (Access Denied) on Windows when a directory is returned instead of a file.
 - **Kotlin & Koin**: Leverage Gradle's type system; [todo] isolated Koin prevents global state leakage.
 - **Testing**: Use **Power Assert** for rich failure messages (avoid overly nested assertions to prevent compiler crashes). Reuse class-level test resources for speed. When asserting on the output of an MCP tool that passes through a
   service layer, verify the final re-rendered format (e.g., `Project: :path`) rather than the raw task output format (e.g., `PROJECT: :path`) to prevent false negatives caused by formatting layers.
+
+## Testing & Dependency Management Mandates
+
+- **NPM Workspaces and ORT Detection**: When testing NPM workspaces with ORT, ensure each sub-package has a `package-lock.json` (even if empty `{}`) to guarantee they are correctly identified as individual projects.
+- **KMP Target Configuration for ORT**: For Kotlin Multiplatform dependency resolution testing with ORT, configure the `kotlin { ... }` block with explicit targets such as `jvm()`, `js(IR) { browser() }`, and `wasmWasi { nodejs() }`.
+- **Automated Gradle Multi-Module Setup**: The standard approach for testing multi-module resolution in ORT involves a root `settings.gradle` file with `include(":module")` statements and corresponding subdirectories, each containing its
+  own `build.gradle`.
+- **Specialized Project DSLs for Test Boilerplate Reduction**: Implementing high-level Domain-Specific Languages (DSLs) like `kotlinJvm { ... }` and `kotlinMultiplatform { ... }` significantly minimizes test boilerplate and enhances
+  readability when dealing with complex build configurations.
+
 - **Mocking & Future-Proofing**: When refactoring service interfaces mocked in many tests, prioritize using a **data class for parameters** (e.g., `DependencyRequestOptions`). This avoids "boolean blindness" and allows adding new
   configuration flags with defaults without breaking existing test call sites.
 - **MCP Design**: Return structured Markdown for LLM reasoning. Use Tooling API for stability. MCP tool descriptions must be self-sufficient enough for standalone use, while skills remain the primary "agentic" interface.

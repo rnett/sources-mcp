@@ -36,8 +36,10 @@ class DependencyCacheService(
             .forEach { (manager, files) ->
                 digest.update(manager.descriptor.id.toByteArray())
                 files.sortedBy { it.absolutePath }.forEach { file ->
-                    digest.update(file.absolutePath.toByteArray())
-                    digest.update(file.readBytes())
+                    if (file.isFile) {
+                        digest.update(file.absolutePath.toByteArray())
+                        digest.update(file.readBytes())
+                    }
                 }
             }
         return digest.digest().joinToString("") { "%02x".format(it) }

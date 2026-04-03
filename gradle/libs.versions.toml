@@ -92,8 +92,30 @@ lucene-highlighter = { group = "org.apache.lucene", name = "lucene-highlighter",
 ort-model = { module = "org.ossreviewtoolkit:model", version.ref = "ort" }
 ort-analyzer = { module = "org.ossreviewtoolkit:analyzer", version.ref = "ort" }
 ort-downloader = { module = "org.ossreviewtoolkit:downloader", version.ref = "ort" }
-ort-plugins-packagemanagers-gradle = { module = "org.ossreviewtoolkit.plugins.packagemanagers:gradle-package-manager", version.ref = "ort" }
-ort-plugins-packagemanagers-npm = { module = "org.ossreviewtoolkit.plugins.packagemanagers:node-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-node = { module = "org.ossreviewtoolkit.plugins.packagemanagers:node-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-maven = { module = "org.ossreviewtoolkit.plugins.packagemanagers:maven-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-python = { module = "org.ossreviewtoolkit.plugins.packagemanagers:python-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-go = { module = "org.ossreviewtoolkit.plugins.packagemanagers:go-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-cargo = { module = "org.ossreviewtoolkit.plugins.packagemanagers:cargo-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-bazel = { module = "org.ossreviewtoolkit.plugins.packagemanagers:bazel-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-bower = { module = "org.ossreviewtoolkit.plugins.packagemanagers:bower-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-bundler = { module = "org.ossreviewtoolkit.plugins.packagemanagers:bundler-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-carthage = { module = "org.ossreviewtoolkit.plugins.packagemanagers:carthage-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-cocoapods = { module = "org.ossreviewtoolkit.plugins.packagemanagers:cocoapods-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-composer = { module = "org.ossreviewtoolkit.plugins.packagemanagers:composer-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-conan = { module = "org.ossreviewtoolkit.plugins.packagemanagers:conan-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-gleam = { module = "org.ossreviewtoolkit.plugins.packagemanagers:gleam-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-mix = { module = "org.ossreviewtoolkit.plugins.packagemanagers:mix-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-nuget = { module = "org.ossreviewtoolkit.plugins.packagemanagers:nuget-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-pub = { module = "org.ossreviewtoolkit.plugins.packagemanagers:pub-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-rebar3 = { module = "org.ossreviewtoolkit.plugins.packagemanagers:rebar3-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-sbt = { module = "org.ossreviewtoolkit.plugins.packagemanagers:sbt-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-spdx = { module = "org.ossreviewtoolkit.plugins.packagemanagers:spdx-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-stack = { module = "org.ossreviewtoolkit.plugins.packagemanagers:stack-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-swiftpm = { module = "org.ossreviewtoolkit.plugins.packagemanagers:swiftpm-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-unmanaged = { module = "org.ossreviewtoolkit.plugins.packagemanagers:unmanaged-package-manager", version.ref = "ort" }
+ort-plugins-packagemanagers-gradle-inspector = { module = "org.ossreviewtoolkit.plugins.packagemanagers:gradle-inspector", version.ref = "ort" }
+ort-plugins-packagemanagers-gradle-model = { module = "org.ossreviewtoolkit.plugins.packagemanagers:gradle-model", version.ref = "ort" }
 
 # so that renovate updates used versions
 #noinspection UnusedVersionCatalogEntry
@@ -104,3 +126,31 @@ androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "androi
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }
 #noinspection UnusedVersionCatalogEntry
 android-gradle-plugin-nine-dummy = { module = "com.android.tools.build:gradle", version.ref = "agp9" }
+
+[bundles]
+ort-plugins-packagemanagers = [
+    "ort-plugins-packagemanagers-node",
+    "ort-plugins-packagemanagers-maven",
+    "ort-plugins-packagemanagers-python",
+    "ort-plugins-packagemanagers-go",
+    "ort-plugins-packagemanagers-cargo",
+    "ort-plugins-packagemanagers-bazel",
+    "ort-plugins-packagemanagers-bower",
+    "ort-plugins-packagemanagers-bundler",
+    "ort-plugins-packagemanagers-carthage",
+    "ort-plugins-packagemanagers-cocoapods",
+    "ort-plugins-packagemanagers-composer",
+    "ort-plugins-packagemanagers-conan",
+    "ort-plugins-packagemanagers-gleam",
+    "ort-plugins-packagemanagers-mix",
+    "ort-plugins-packagemanagers-nuget",
+    "ort-plugins-packagemanagers-pub",
+    "ort-plugins-packagemanagers-rebar3",
+    "ort-plugins-packagemanagers-sbt",
+    "ort-plugins-packagemanagers-spdx",
+    "ort-plugins-packagemanagers-stack",
+    "ort-plugins-packagemanagers-swiftpm",
+    "ort-plugins-packagemanagers-unmanaged",
+    "ort-plugins-packagemanagers-gradle-inspector",
+    "ort-plugins-packagemanagers-gradle-model"
+]

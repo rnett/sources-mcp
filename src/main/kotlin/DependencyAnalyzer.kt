@@ -24,7 +24,7 @@ class DependencyAnalyzer(
 
         val managedFiles = analyzer.findManagedFiles(
             absoluteProjectPath = projectRoot.toFile(),
-            packageManagers = PackageManagerFactory.ALL.values,
+            packageManagers = PackageManagerFactory.ALL.values.filter { it.descriptor.id != "Unmanaged" },
             repositoryConfiguration = RepositoryConfiguration()
         )
 
