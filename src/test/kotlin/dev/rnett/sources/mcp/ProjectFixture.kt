@@ -22,9 +22,15 @@ fun ProjectFixture.npm(block: NpmBuilder.() -> Unit) {
     NpmBuilder(this).apply(block).build()
 }
 
+fun ProjectFixture.npmSubproject(path: String, block: NpmBuilder.() -> Unit) {
+    NpmBuilder(ProjectFixture(root.resolve(path))).apply(block).build()
+}
+
 class NpmBuilder(private val fixture: ProjectFixture) {
     private val dependencies = mutableMapOf<String, String>()
     private var name = "test-project"
+    private val workspaces = mutableListOf<String>()
+    private var skipLockFile = false
 
     fun name(name: String) {
         this.name = name
@@ -34,8 +40,17 @@ class NpmBuilder(private val fixture: ProjectFixture) {
         dependencies[name] = version
     }
 
+    fun addWorkspace(pattern: String) {
+        workspaces.add(pattern)
+    }
+
+    fun skipLockFile() {
+        this.skipLockFile = true
+    }
+
     fun build() {
         val depsJson = dependencies.entries.joinToString(",\n        ") { (k, v) -> "\"$k\": \"$v\"" }
+        val workspacesJson = if (workspaces.isEmpty()) "" else ",\n  \"workspaces\": ${workspaces.map { "\"$it\"" }}"
         fixture.file(
             "package.json", """
             {
@@ -43,11 +58,53 @@ class NpmBuilder(private val fixture: ProjectFixture) {
               "version": "1.0.0",
               "dependencies": {
                 $depsJson
+              }$workspacesJson
+            }
+        """.trimIndent()
+        )
+
+        if (skipLockFile) return
+        val lockPackages = dependencies.entries.joinToString(",\n") { (k, v) ->
+            """
+            "node_modules/$k": {
+              "version": "$v",
+              "resolved": "https://registry.npmjs.org/$k/-/$k-$v.tgz"
+            }
+            """.trimIndent()
+        }
+
+        val lockDeps = dependencies.entries.joinToString(",\n") { (k, v) ->
+            """
+            "$k": {
+              "version": "$v",
+              "resolved": "https://registry.npmjs.org/$k/-/$k-$v.tgz"
+            }
+            """.trimIndent()
+        }
+
+        fixture.file(
+            "package-lock.json", """
+            {
+              "name": "$name",
+              "version": "1.0.0",
+              "lockfileVersion": 2,
+              "requires": true,
+              "packages": {
+                "": {
+                  "name": "$name",
+                  "version": "1.0.0",
+                  "dependencies": {
+                    $depsJson
+                  }
+                },
+                $lockPackages
+              },
+              "dependencies": {
+                $lockDeps
               }
             }
         """.trimIndent()
         )
-        fixture.file("package-lock.json", "{}")
     }
 }
 
@@ -275,6 +332,28 @@ class CargoBuilder(private val fixture: ProjectFixture) {
 
             [dependencies]
             $depsStr
+        """.trimIndent()
+        )
+        fixture.file("src/lib.rs", "")
+
+        val lockPackages = dependencies.entries.joinToString("\n\n") { (k, v) ->
+            """
+            [[package]]
+            name = "$k"
+            version = "$v"
+            """.trimIndent()
+        }
+
+        fixture.file(
+            "Cargo.lock", """
+            [[package]]
+            name = "$name"
+            version = "0.1.0"
+            dependencies = [
+                ${dependencies.keys.joinToString(", ") { "\"$it\"" }}
+            ]
+
+            $lockPackages
         """.trimIndent()
         )
     }

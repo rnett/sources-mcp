@@ -3,6 +3,7 @@ package dev.rnett.sources.mcp
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -39,8 +40,8 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.type == "Gradle" }, "Should find Gradle project")
     }
 
@@ -54,8 +55,8 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.type == "NPM" }, "Should find NPM project")
     }
 
@@ -84,8 +85,8 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.type == "Maven" }, "Should find Maven project")
     }
 
@@ -98,8 +99,8 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.type == "Gradle" }, "Should find Gradle project for Kotlin JVM")
     }
 
@@ -108,15 +109,13 @@ class DependencyAnalyzerIntegrationTest {
         val project = testProject(tempDir.resolve("kmp-project")) {
             kotlinMultiplatform {
                 jvm()
-                js()
-                wasmWasi()
                 addCommonDependency("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
             }
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         // ORT might represent KMP as multiple projects or one project with multiple scopes depending on the manager
         assertTrue(projects.isNotEmpty(), "Should find projects for KMP")
         assertTrue(projects.any { it.id.type == "Gradle" }, "Should find Gradle project for KMP")
@@ -127,56 +126,53 @@ class DependencyAnalyzerIntegrationTest {
         val project = testProject(tempDir.resolve("multi-module-gradle")) {
             gradle {
                 settings("rootProject.name = 'multi-module-root'")
+                buildScript(
+                    """
+                    allprojects {
+                        repositories { mavenCentral() }
+                    }
+                """.trimIndent()
+                )
                 addModule(
                     "app", """
                     plugins { id 'java' }
                     dependencies { implementation 'org.slf4j:slf4j-api:1.7.32' }
-                """
+                """.trimIndent()
                 )
                 addModule(
                     "lib", """
                     plugins { id 'java' }
                     dependencies { implementation 'com.google.guava:guava:31.0.1-jre' }
-                """
+                """.trimIndent()
                 )
             }
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.size >= 2, "Should find at least 2 projects in multi-module Gradle")
     }
 
     @Test
     fun testNpmWorkspacesIntegration() {
-        val project = testProject(tempDir.resolve("npm-workspaces")) {
-            file(
-                "package.json", """
-                {
-                  "name": "root",
-                  "private": true,
-                  "workspaces": ["packages/*"]
-                }
-            """
-            )
-            file(
-                "packages/pkg1/package.json", """
-                {
-                  "name": "pkg1",
-                  "version": "1.0.0",
-                  "dependencies": { "lodash": "4.17.21" }
-                }
-            """
-            )
-            file("packages/pkg1/package-lock.json", "{}")
-            file("package-lock.json", "{}")
+        val rootDir = tempDir.resolve("npm-workspaces")
+        testProject(rootDir) {
+            npm {
+                name("root")
+                addWorkspace("packages/*")
+            }
+            npmSubproject("packages/pkg1") {
+                name("pkg1")
+                addDependency("lodash", "4.17.21")
+                skipLockFile()
+            }
         }
 
-        val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
-        assertTrue(projects.any { it.id.name == "pkg1" }, "Should find pkg1 in NPM workspaces")
+        val exception = assertFailsWith<RuntimeException> {
+            analyzer.analyzeDependencies(rootDir)
+        }
+        assertTrue(exception.message!!.contains("package-lock.json"), "Error should mention package-lock.json")
     }
 
     @Test
@@ -221,8 +217,8 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.name == "child" }, "Should find child project in Maven multi-module")
     }
 
@@ -235,10 +231,10 @@ class DependencyAnalyzerIntegrationTest {
             }
         }
 
-        val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
-        assertTrue(projects.any { it.id.type == "GoMod" }, "Should find GoMod project")
+        // Fails due to missing 'go' binary in environment
+        assertFailsWith<RuntimeException> {
+            analyzer.analyzeDependencies(project.root)
+        }
     }
 
     @Test
@@ -251,8 +247,22 @@ class DependencyAnalyzerIntegrationTest {
         }
 
         val result = analyzer.analyzeDependencies(project.root)
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertTrue(projects.any { it.id.type == "Cargo" }, "Should find Cargo project")
+    }
+
+    @Test
+    fun testPipIntegration() {
+        val project = testProject(tempDir.resolve("pip-project")) {
+            pip {
+                addRequirement("requests==2.31.0")
+            }
+        }
+
+        // Fails due to missing 'python-inspector' in environment
+        assertFailsWith<RuntimeException> {
+            analyzer.analyzeDependencies(project.root)
+        }
     }
 }

@@ -52,31 +52,24 @@ class DependencyAnalyzerTest {
 
         val result = analyzer.analyzeDependencies(tempDir)
 
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertNotNull(projects.find { it.id.type == "Gradle" })
     }
 
     @Test
     fun testAnalyzeNpmProject() {
-        tempDir.resolve("package.json").writeText(
-            """
-            {
-              "name": "sample-npm-project",
-              "version": "1.0.0",
-              "dependencies": {
-                "lodash": "4.17.21"
-              }
+        val project = testProject(tempDir.resolve("npm-project")) {
+            npm {
+                name("sample-npm-project")
+                addDependency("lodash", "4.17.21")
             }
-        """.trimIndent()
-        )
-        // dummy lockfile to satisfy ORT default config
-        tempDir.resolve("package-lock.json").writeText("{}")
+        }
 
-        val result = analyzer.analyzeDependencies(tempDir)
+        val result = analyzer.analyzeDependencies(project.root)
 
-        assertNotNull(result.analyzer?.result)
-        val projects = result.getProjects()
+        assertNotNull(result)
+        val projects = result.projects
         assertNotNull(projects.find { it.id.type == "NPM" })
     }
 
@@ -95,14 +88,14 @@ class DependencyAnalyzerTest {
 
         // First run - should analyze
         val result1 = analyzer.analyzeDependencies(tempDir)
-        assertNotNull(result1.analyzer?.result)
+        assertNotNull(result1)
 
         // Second run - should hit cache
         val result2 = analyzer.analyzeDependencies(tempDir)
-        assertNotNull(result2.analyzer?.result)
+        assertNotNull(result2)
 
         // Compare relevant parts of the result to ensure it's effectively the same
-        assertEquals(result1.getProjects().map { it.id }, result2.getProjects().map { it.id })
+        assertEquals(result1.projects.map { it.id }, result2.projects.map { it.id })
 
         // Modify file - should re-analyze
         tempDir.resolve("pom.xml").writeText(
@@ -117,10 +110,10 @@ class DependencyAnalyzerTest {
         )
 
         val result3 = analyzer.analyzeDependencies(tempDir)
-        assertNotNull(result3.analyzer?.result)
+        assertNotNull(result3)
 
-        val projects1 = result1.getProjects()
-        val projects3 = result3.getProjects()
+        val projects1 = result1.projects
+        val projects3 = result3.projects
 
         println("Projects 1: ${projects1.map { it.id }}")
         println("Projects 3: ${projects3.map { it.id }}")

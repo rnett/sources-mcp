@@ -37,7 +37,8 @@ Not-yet-supported items are marked with `[todo]`.
 - **ORT Mandates**:
   - **Plugin Versions**: Coordinate core and plugin versions carefully (e.g., avoid mixing v13 and v83) to prevent `NoClassDefFoundError` due to breaking core changes.
   - **Managed Files**: ALWAYS check `file.isFile` before reading bytes from `ManagedFileInfo` paths to avoid `FileNotFoundException` (Access Denied) on Windows when a directory is returned instead of a file.
-- **Kotlin & Koin**: Leverage Gradle's type system; [todo] isolated Koin prevents global state leakage.
+  - **Directory Flattening**: ALWAYS implement a directory flattening step after downloading and extracting sources with ORT (especially for NPM and GitHub tarballs) to ensure a consistent CAS structure (e.g., removing redundant `package/`
+    subdirectories).
 - **Testing**: Use **Power Assert** for rich failure messages (avoid overly nested assertions to prevent compiler crashes). Reuse class-level test resources for speed. When asserting on the output of an MCP tool that passes through a
   service layer, verify the final re-rendered format (e.g., `Project: :path`) rather than the raw task output format (e.g., `PROJECT: :path`) to prevent false negatives caused by formatting layers.
 
@@ -47,7 +48,9 @@ Not-yet-supported items are marked with `[todo]`.
 - **KMP Target Configuration for ORT**: For Kotlin Multiplatform dependency resolution testing with ORT, configure the `kotlin { ... }` block with explicit targets such as `jvm()`, `js(IR) { browser() }`, and `wasmWasi { nodejs() }`.
 - **Automated Gradle Multi-Module Setup**: The standard approach for testing multi-module resolution in ORT involves a root `settings.gradle` file with `include(":module")` statements and corresponding subdirectories, each containing its
   own `build.gradle`.
-- **Specialized Project DSLs for Test Boilerplate Reduction**: Implementing high-level Domain-Specific Languages (DSLs) like `kotlinJvm { ... }` and `kotlinMultiplatform { ... }` significantly minimizes test boilerplate and enhances
+- **NPM and ORT Testing**: When testing NPM projects with ORT, always provide a valid `package-lock.json` or configure `legacyInstall = true` in `AnalyzerConfiguration` to use `npm install` instead of `npm ci` (which requires a synchronized
+  lockfile).
+- **Cargo and ORT Testing**: Cargo project detection and resolution in ORT requires both a `Cargo.lock` file and a valid target (e.g., `src/lib.rs` or `src/main.rs`) to prevent `cargo metadata` failures.
   readability when dealing with complex build configurations.
 
 - **Mocking & Future-Proofing**: When refactoring service interfaces mocked in many tests, prioritize using a **data class for parameters** (e.g., `DependencyRequestOptions`). This avoids "boolean blindness" and allows adding new

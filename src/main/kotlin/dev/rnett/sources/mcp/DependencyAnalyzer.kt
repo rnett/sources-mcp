@@ -2,9 +2,10 @@ package dev.rnett.sources.mcp
 
 import org.ossreviewtoolkit.analyzer.Analyzer
 import org.ossreviewtoolkit.analyzer.PackageManagerFactory
-import org.ossreviewtoolkit.model.OrtResult
+import org.ossreviewtoolkit.model.AnalyzerResult
 import org.ossreviewtoolkit.model.config.AnalyzerConfiguration
 import org.ossreviewtoolkit.model.config.RepositoryConfiguration
+import org.ossreviewtoolkit.model.utils.convertToDependencyGraph
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -15,11 +16,19 @@ class DependencyAnalyzer(
     /**
      * Takes a project root (any ecosystem) and returns an ORT dependency analysis result.
      */
-    fun analyzeDependencies(projectRoot: Path): OrtResult {
+    fun analyzeDependencies(
+        projectRoot: Path,
+        packageManagerOptions: Map<String, Map<String, String>> = emptyMap()
+    ): AnalyzerResult {
         require(projectRoot.exists()) { "Project root does not exist: $projectRoot" }
         require(projectRoot.isDirectory()) { "Project root is not a directory: $projectRoot" }
 
-        val analyzerConfig = AnalyzerConfiguration()
+        var analyzerConfig = AnalyzerConfiguration()
+        packageManagerOptions.forEach { (name, options) ->
+            options.forEach { (key, value) ->
+                analyzerConfig = analyzerConfig.withPackageManagerOption(name, key, value)
+            }
+        }
         val analyzer = Analyzer(analyzerConfig)
 
         val managedFiles = analyzer.findManagedFiles(
@@ -37,7 +46,16 @@ class DependencyAnalyzer(
             return cachedResult
         }
 
-        val ortResult = analyzer.analyze(managedFiles)
+        val ortResult = analyzer.analyze(managedFiles).analyzer!!.result.convertToDependencyGraph()
+
+        val issues = ortResult?.issues.orEmpty()
+        if (issues.isNotEmpty()) {
+            val errorDetails = issues.entries.joinToString("\n") { (id, projectIssues) ->
+                "Project ${id.toCoordinates()}:\n  ${projectIssues.joinToString("\n  ") { it.message }}"
+            }
+            throw RuntimeException("Dependency analysis failed with the following issues:\n$errorDetails")
+        }
+
         return cacheService.saveResult(managedFiles, ortResult)
     }
 }

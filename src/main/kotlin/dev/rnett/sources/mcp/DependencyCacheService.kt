@@ -1,7 +1,7 @@
 package dev.rnett.sources.mcp
 
 import org.ossreviewtoolkit.analyzer.Analyzer
-import org.ossreviewtoolkit.model.OrtResult
+import org.ossreviewtoolkit.model.AnalyzerResult
 import org.ossreviewtoolkit.model.readValue
 import org.ossreviewtoolkit.model.writeValue
 import java.security.MessageDigest
@@ -12,17 +12,17 @@ class DependencyCacheService(
 ) {
     private val cacheDir get() = env.analyzerCacheDir
 
-    fun getCachedResult(managedFiles: Analyzer.ManagedFileInfo): OrtResult? {
+    fun getCachedResult(managedFiles: Analyzer.ManagedFileInfo): AnalyzerResult? {
         val cacheKey = calculateCacheKey(managedFiles)
         val cachedFile = cacheDir.resolve("$cacheKey.yml")
         return if (cachedFile.exists()) {
-            cachedFile.toFile().readValue<OrtResult>()
+            cachedFile.toFile().readValue<AnalyzerResult>()
         } else {
             null
         }
     }
 
-    fun saveResult(managedFiles: Analyzer.ManagedFileInfo, ortResult: OrtResult): OrtResult {
+    fun saveResult(managedFiles: Analyzer.ManagedFileInfo, ortResult: AnalyzerResult): AnalyzerResult {
         val cacheKey = calculateCacheKey(managedFiles)
         val cachedFile = cacheDir.resolve("$cacheKey.yml")
         cachedFile.toFile().writeValue(ortResult)

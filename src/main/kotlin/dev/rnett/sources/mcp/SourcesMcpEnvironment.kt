@@ -8,9 +8,13 @@ import kotlin.io.path.createDirectories
 data class SourcesMcpEnvironment(val workingDir: Path) {
     val cacheDir: Path = workingDir.resolve("cache")
     val analyzerCacheDir: Path = cacheDir.resolve("analyzer")
+    val casDir: Path = cacheDir.resolve("cas")
+    val locksDir: Path = cacheDir.resolve("locks")
 
     init {
         analyzerCacheDir.createDirectories()
+        casDir.createDirectories()
+        locksDir.createDirectories()
     }
 
     companion object {
