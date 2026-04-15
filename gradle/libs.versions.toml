@@ -29,7 +29,7 @@ shadow = "9.4.1"
 treesitter = "0.26.6"
 treesitter-java = "0.23.5"
 treesitter-kotlin = "0.3.8.1"
-ort = "83.0.1"
+ort = "83.1.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
