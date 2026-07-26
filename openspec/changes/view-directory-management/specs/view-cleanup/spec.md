@@ -2,8 +2,7 @@
 
 ### Requirement: Time-based pruning of stale views
 
-The system SHALL periodically scan the `viewsDir` and remove view directories older than a configurable maximum age (default: 24 hours). The maximum age SHALL be configurable via environment variable or application configuration. The
-cleanup scan interval is configurable (default: 60 minutes).
+The system SHALL periodically scan the `viewsDir` and remove view directories older than a configurable maximum age (default: 24 hours). The maximum age and cleanup scan interval are configurable via constructor parameters (`maxAge`, default: 24 hours; `cleanupInterval`, default: 60 minutes). Environment variable configuration is deferred to a future configuration system.
 
 #### Scenario: Stale view removal
 

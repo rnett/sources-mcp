@@ -7,16 +7,20 @@ import org.ossreviewtoolkit.model.Provenance
 import org.ossreviewtoolkit.model.config.DownloaderConfiguration
 import org.ossreviewtoolkit.model.utils.toPurl
 import org.slf4j.LoggerFactory
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
 
 /**
  * Service to download and extract dependency sources using ORT.
  * Implements a Content-Addressable Storage (CAS) with advisory locking to ensure
  * robust concurrent access.
  */
+@OptIn(kotlin.io.path.ExperimentalPathApi::class)
 class DependencySourcesDownloader(
     private val env: SourcesMcpEnvironment = SourcesMcpEnvironment.fromEnv()
 ) {
@@ -31,23 +35,26 @@ class DependencySourcesDownloader(
      *
      * The CAS key is based on the artifact hash available on the [pkg].
      */
-    fun downloadSources(pkg: Package): Path {
+    fun downloadSources(pkg: Package, forceRedownload: Boolean = false): Path {
         val casKey = getCasKey(pkg)
         val targetDir = env.casDir.resolve(casKey)
 
         // 1. Fast path: check if already in CAS
-        if (targetDir.exists()) {
+        if (!forceRedownload && targetDir.exists()) {
             return targetDir
         }
 
         // 2. Acquisition of the advisory lock based on the CAS key
         val lockFile = env.locksDir.resolve("$casKey.lock")
         return FileLockManager.withLock(lockFile) {
-            // 3. Double-check after acquiring the lock
             if (targetDir.exists()) {
-                return@withLock targetDir
+                if (forceRedownload) {
+                    targetDir.deleteRecursively()
+                    // fall through to downloadAndProcess
+                } else {
+                    return@withLock targetDir
+                }
             }
-
             downloadAndProcess(pkg, targetDir, casKey)
         }
     }
@@ -67,7 +74,7 @@ class DependencySourcesDownloader(
         } catch (e: Exception) {
             logger.error("Failed to download sources for ${pkg.id.toCoordinates()}", e)
             if (tempDir.exists()) {
-                tempDir.toFile().deleteRecursively()
+                tempDir.deleteRecursively()
             }
             throw e
         }
@@ -75,7 +82,7 @@ class DependencySourcesDownloader(
 
     private fun performDownload(pkg: Package, tempDir: Path): Provenance {
         logger.info("Downloading sources for ${pkg.id.toCoordinates()} to $tempDir")
-        return downloader.download(pkg, tempDir.toFile())
+        return downloader.download(pkg, tempDir.toFile()) // ORT API requires java.io.File
     }
 
     private fun getCasKey(pkg: Package): String {
@@ -106,16 +113,15 @@ class DependencySourcesDownloader(
     }
 
     private fun flattenSubdirectory(dir: Path) {
-        val files = dir.toFile().listFiles() ?: return
-        if (files.size == 1 && files[0].isDirectory) {
-            val subDir = files[0]
-            logger.info("Flattening subdirectory: ${subDir.name}")
-            val subFiles = subDir.listFiles() ?: return
-            for (file in subFiles) {
-                val target = dir.resolve(file.name)
-                java.nio.file.Files.move(file.toPath(), target)
-            }
-            subDir.delete()
+        val entries = Files.list(dir).use { it.toList() }
+        if (entries.size != 1 || !entries[0].isDirectory()) return
+        val subDir = entries[0]
+        logger.info("Flattening subdirectory: ${subDir.fileName}")
+        val subEntries = Files.list(subDir).use { it.toList() }
+        for (entry in subEntries) {
+            val target = dir.resolve(entry.fileName)
+            Files.move(entry, target)
         }
+        subDir.deleteRecursively()
     }
 }

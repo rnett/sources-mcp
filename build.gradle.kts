@@ -19,7 +19,7 @@ repositories {
 }
 
 application {
-    mainClass.set("dev.rnett.gradle.mcp.Application")
+    mainClass.set("dev.rnett.sources.mcp.SourcesMcpServerKt")
     applicationDefaultJvmArgs = listOf(
         "-Xmx1024m",
         "-Xms256m"

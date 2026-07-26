@@ -61,11 +61,54 @@ Not-yet-supported items are marked with `[todo]`.
 ---
 
 ### General Mandates
-
 - **Research First**: ALWAYS research correct implementation/API usage (especially Kotlin Scripting) before attempting code changes.
 - **Rubber Ducking**: Document findings and "think out loud" when stuck.
 
 ---
+
+## View Service Invariants (Resolution Plan Review #2)
+
+These invariants were established during the review of the View Directory Lifecycle Management system:
+
+13. **Server Bootstrap Rule**: Any new MCP tool class (like `SyncCheckTools`) MUST be accompanied by either (a) a server bootstrap that wires it, or (b) an integration test that invokes it through the MCP protocol. No "tool exists but nobody calls `registerAll`."
+
+14. **Concurrency Limiter Verification**: Any method performing batch I/O with a user-visible `parallelism` parameter MUST verify that the limit is actually enforced (Semaphore or `flatMapMerge`). A test must verify the limit is honored — `chunked(N)` alone is insufficient.
+
+15. **`createDirectories()` Try-Scope Rule**: All `createDirectories()` calls that are part of multi-step setup (where earlier steps must be cleaned up if later steps fail) MUST be inside the corresponding `try-catch-finally` block, not in variable initializers or `.also{}`.
+
+16. **Scope-Keyed Indexes Rule**: Any cross-process index that keys by project root MUST also include scope/session parameters when multiple scoped views can coexist. The index schema must match the in-memory cache key schema.
+
+17. **Manifest Deserialization Guard**: Any data deserialized from `manifest.json` or similar on-disk artifacts that controls filesystem operations (`Path.of()`, `Files.list()` etc.) MUST be validated for safety before use. Specifically: reject UNC paths, enforce reasonable length limits, validate that strings conform to expected formats (absolute local paths only).
+
+18. **Subprocess Timeout Rule**: Any `ProcessBuilder` invocation that calls `waitFor()` MUST use the timed variant (`waitFor(timeout, unit)`) with `destroyForcibly()` on timeout. Blocking indefinitely on a subprocess is a denial-of-service vector within the coroutine pool.
+
+19. **No `runBlocking` in Shared Utility Code**: Any utility function that may be called from a coroutine context MUST NOT use `runBlocking`. Either make it `suspend` or explicitly document that callers must offload to `Dispatchers.IO`.
+
+20. **`async`-Per-Item Bounded Chunking Rule**: When processing variable-length collections with `async`, the number of concurrently launched coroutines MUST be bounded by a configurable limit (not just the active concurrency). Use `chunked(limit)` or `flatMapMerge(limit)`.
+
+21. **Subprocess from Coroutines Requires `withContext(Dispatchers.IO)`**: Any `ProcessBuilder` or `Runtime.exec()` call made from a coroutine context MUST be wrapped in `withContext(Dispatchers.IO)` to prevent thread blocking.
+
+22. **Keyed-Mutex Registry Cleanup Rule**: Any `ConcurrentHashMap<K, Mutex>` used to serialize per-key operations MUST have an explicit removal policy — either after the critical section completes or via a scheduled cleanup.
+
+23. **Dual-Cache Coordination Rule**: When a class maintains two in-memory caches that are conceptually paired (e.g., `viewCache` and `syncMutexes`), eviction operations MUST update both caches atomically. They should share a single eviction API or have mirrored removal logic.
+
+24. **Error Message Sanitization Rule**: Exception messages that propagate to MCP clients MUST NOT contain absolute filesystem paths. Use dependency identifiers (`pkg.id.toCoordinates()`) or session-relative paths. Full paths may appear in server-side log output only.
+
+25. **Cancellation Propagation Rule**: Any `catch (e: Exception)` block inside a coroutine MUST explicitly re-throw `CancellationException` before catching other exceptions. Swallowing cancellation breaks structured concurrency and can leave partial state on disk.
+
+26. **Integration Test Compilation Gate**: Any change that modifies a service constructor signature MUST update all test call sites (unit + integration) in the same commit. A `compileIntegrationTestKotlin` check in CI should catch this automatically.
+
+27. **Spec-Signature Parity Rule**: When a documented method signature in a spec changes during implementation (e.g., parameter types, added enums, renamed methods), the spec MUST be updated within the same change. Spec drift between design docs and code is a blocking finding.
+
+28. **Configuration Transparency Rule**: When a spec says a value is "configurable via environment variable," the implementation MUST contain code that reads that environment variable. Otherwise, the spec MUST say "configurable via constructor parameter" with the actual mechanism documented.
+
+29. **Single-Scan Rule for View Creation**: All operations within a single `sync()` call that require ORT's `findManagedFiles()` (file discovery, hash computation, analysis) MUST share a single invocation of `findManagedFiles()`. No code path within a single `sync()` may call `findManagedFiles()` more than once.
+
+30. **Cache Boundedness Rule**: Any in-memory cache (especially `ConcurrentHashMap`-based caches) keyed by user-provided inputs (project roots, scopes, etc.) MUST have a bounded maximum size or TTL-based eviction. Unbounded growth in a long-running server process is a memory leak. For local-dev-only caches, document the assumption explicitly if unbounded is intentional.
+
+31. **Vendor-Free Workspace Rule**: No vendored/duplicated source files of external libraries may exist in the repository outside of Gradle-managed dependencies. Leftover prototyping artifacts must be cleaned up before merging to the main branch.
+
+32. **Scope Matching Transparency Rule**: Any deviation from "exact match" in scope filtering (e.g., suffix matching, case-insensitive matching, wildcard matching) MUST be explicitly documented in both the design decision and the behavioral spec. Undocumented matching rules are specification bugs.
 
 ## Build & Test Commands
 

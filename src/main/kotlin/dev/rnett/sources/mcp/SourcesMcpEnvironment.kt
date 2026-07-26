@@ -10,11 +10,13 @@ data class SourcesMcpEnvironment(val workingDir: Path) {
     val analyzerCacheDir: Path = cacheDir.resolve("analyzer")
     val casDir: Path = cacheDir.resolve("cas")
     val locksDir: Path = cacheDir.resolve("locks")
-
+    val viewsDir: Path = cacheDir.resolve("views")
+    // Intentional: constructor creates directories via createDirectories() for bootstrapping simplicity.
     init {
         analyzerCacheDir.createDirectories()
         casDir.createDirectories()
         locksDir.createDirectories()
+        viewsDir.createDirectories()
     }
 
     companion object {

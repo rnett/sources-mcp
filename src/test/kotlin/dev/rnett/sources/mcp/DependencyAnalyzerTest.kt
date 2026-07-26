@@ -6,6 +6,7 @@ import java.nio.file.Path
 import kotlin.io.path.writeText
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
 class DependencyAnalyzerTest {
@@ -119,5 +120,64 @@ class DependencyAnalyzerTest {
         println("Projects 3: ${projects3.map { it.id }}")
 
         assert(projects1.map { it.id.name } != projects3.map { it.id.name })
+    }
+
+    @Test
+    fun testComputeDepHashSameForSameFiles() {
+        val projectDir = tempDir.resolve("hash-same")
+        createPomProject(projectDir, "same-project")
+
+        val hash1 = analyzer.computeDepHash(projectDir)
+        val hash2 = analyzer.computeDepHash(projectDir)
+
+        assertEquals(hash1, hash2)
+    }
+
+    @Test
+    fun testComputeDepHashDifferentWhenFilesChange() {
+        val projectDir = tempDir.resolve("hash-diff")
+        createPomProject(projectDir, "diff-project")
+
+        val hash1 = analyzer.computeDepHash(projectDir)
+
+        projectDir.resolve("pom.xml").writeText(
+            """
+            <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>dev.rnett</groupId>
+                <artifactId>diff-project-modified</artifactId>
+                <version>1.0.0</version>
+            </project>
+            """.trimIndent()
+        )
+
+        val hash2 = analyzer.computeDepHash(projectDir)
+
+        assertNotEquals(hash1, hash2)
+    }
+
+    @Test
+    fun testComputeDepHashWithEmptyManagedFiles() {
+        val emptyDir = tempDir.resolve("empty-managed")
+        emptyDir.toFile().mkdirs()
+
+        val hash = analyzer.computeDepHash(emptyDir)
+
+        val expectedEmptyHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        assertEquals(expectedEmptyHash, hash)
+    }
+
+    private fun createPomProject(dir: Path, artifactId: String) {
+        dir.toFile().mkdirs()
+        dir.resolve("pom.xml").writeText(
+            """
+            <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>dev.rnett</groupId>
+                <artifactId>$artifactId</artifactId>
+                <version>1.0.0</version>
+            </project>
+            """.trimIndent()
+        )
     }
 }

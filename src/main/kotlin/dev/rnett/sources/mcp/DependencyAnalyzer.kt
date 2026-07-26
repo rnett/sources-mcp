@@ -18,7 +18,8 @@ class DependencyAnalyzer(
      */
     fun analyzeDependencies(
         projectRoot: Path,
-        packageManagerOptions: Map<String, Map<String, String>> = emptyMap()
+        packageManagerOptions: Map<String, Map<String, String>> = emptyMap(),
+        force: Boolean = false
     ): AnalyzerResult {
         require(projectRoot.exists()) { "Project root does not exist: $projectRoot" }
         require(projectRoot.isDirectory()) { "Project root is not a directory: $projectRoot" }
@@ -29,23 +30,21 @@ class DependencyAnalyzer(
                 analyzerConfig = analyzerConfig.withPackageManagerOption(name, key, value)
             }
         }
-        val analyzer = Analyzer(analyzerConfig)
 
-        val managedFiles = analyzer.findManagedFiles(
-            absoluteProjectPath = projectRoot.toFile(),
-            packageManagers = PackageManagerFactory.ALL.values.filter { it.descriptor.id != "Unmanaged" },
-            repositoryConfiguration = RepositoryConfiguration()
-        )
+        val managedFiles = findProjectManagedFiles(projectRoot)
 
         if (managedFiles.managedFiles.isEmpty()) {
             throw IllegalArgumentException("No supported projects found in $projectRoot")
         }
 
-        val cachedResult = cacheService.getCachedResult(managedFiles)
-        if (cachedResult != null) {
-            return cachedResult
+        if (!force) {
+            val cachedResult = cacheService.getCachedResult(managedFiles)
+            if (cachedResult != null) {
+                return cachedResult
+            }
         }
 
+        val analyzer = Analyzer(analyzerConfig)
         val ortResult = analyzer.analyze(managedFiles).analyzer!!.result.convertToDependencyGraph()
 
         val issues = ortResult?.issues.orEmpty()
@@ -58,4 +57,15 @@ class DependencyAnalyzer(
 
         return cacheService.saveResult(managedFiles, ortResult)
     }
+
+    fun computeDepHash(projectRoot: Path): String {
+        val managedFiles = findProjectManagedFiles(projectRoot)
+        return DependencyCacheService.calculateCacheKey(managedFiles)
+    }
+
+    private fun findProjectManagedFiles(projectRoot: Path) = Analyzer(AnalyzerConfiguration()).findManagedFiles(
+        absoluteProjectPath = projectRoot.toFile(), // ORT API requires java.io.File
+        packageManagers = PackageManagerFactory.ALL.values.filter { it.descriptor.id != "Unmanaged" },
+        repositoryConfiguration = RepositoryConfiguration()
+    )
 }
