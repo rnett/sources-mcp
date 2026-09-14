@@ -12,7 +12,7 @@ flexmark = "0.64.8"
 coroutines = "1.11.0"
 mcpSdk = "0.13.0"
 gradleToolingApi = "9.6.1" # renovate: ignoreUnstable=false
-buildconfig = "6.0.10"
+buildconfig = "6.1.0"
 vanniktechPublish = "0.37.0"
 jsoup = "1.22.2"
 koin = "4.2.2"
